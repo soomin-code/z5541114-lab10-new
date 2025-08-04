@@ -1,0 +1,1 @@
+{"version":3,"file":"echo.js","sourceRoot":"","sources":["../src/echo.ts"],"names":[],"mappings":";AAAA;;;GAGG;;;;;AAIH,oBAOC;AATD,8DAAoC;AAEpC,SAAgB,IAAI,CAAC,OAAe;IAClC,IAAI,OAAO,KAAK,MAAM,EAAE,CAAC;QACvB,MAAM,IAAA,qBAAS,EAAC,GAAG,EAAE,4BAA4B,CAAC,CAAC;IACrD,CAAC;IACD,OAAO;QACL,OAAO;KACR,CAAC;AACJ,CAAC"}

@@ -21,6 +21,7 @@ const database = new Redis({
 const app = express();
 
 // Force rebuild to break Vercel cache - v2
+// Build timestamp: 2025-08-04T13:30:00Z - Force KV environment recognition
 app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
