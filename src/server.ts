@@ -30,20 +30,44 @@ app.get("/echo/echo", (req: Request, res: Response) => {
   res.json(echo(req.query.message as string));
 });
 
-app.post("/add/name", (req: Request, res) => {
-  res.json(addName(req.body.name));
+app.post("/add/name", async (req: Request, res) => {
+  try {
+    const result = await addName(req.body.name);
+    res.json(result);
+  } catch (error) {
+    console.error('Error in /add/name:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
-app.get("/view/names", (req: Request, res: Response) => {
-  res.json(viewNames());
+app.get("/view/names", async (req: Request, res: Response) => {
+  try {
+    const result = await viewNames();
+    res.json(result);
+  } catch (error) {
+    console.error('Error in /view/names:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
-app.delete("/clear", (req: Request, res: Response) => {
-  res.json(clear());
+app.delete("/clear", async (req: Request, res: Response) => {
+  try {
+    const result = await clear();
+    res.json(result);
+  } catch (error) {
+    console.error('Error in DELETE /clear:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
-app.post("/clear", (req: Request, res: Response) => {
-  res.json(clear());
+app.post("/clear", async (req: Request, res: Response) => {
+  try {
+    const result = await clear();
+    res.json(result);
+  } catch (error) {
+    console.error('Error in POST /clear:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 app.get("/echo/:message", (req: Request, res: Response) => {
