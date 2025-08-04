@@ -7,10 +7,15 @@
 import HTTPError from 'http-errors';
 import { Redis } from '@upstash/redis';
 
-// KV Database connection using explicit configuration
+// KV Database connection with improved timeout settings
 const database = new Redis({
   url: process.env.KV_REST_API_URL || 'https://adjusted-iguana-8721.upstash.io',
   token: process.env.KV_REST_API_TOKEN || 'ASIRAAIjcDFkNjkwY2ZkNzkwNTE0NDNkODEyYTNiYzE4ODZkMjYzM3AxMA',
+  // 타임아웃 설정 개선 (30초)
+  retry: {
+    retries: 3,
+    backoff: (retryCount: number) => Math.min(1000 * 2 ** retryCount, 30000)
+  }
 });
 
 const MAX_LENGTH = 20;
@@ -49,11 +54,31 @@ const checkValidName = (name: string) => {
   }
 };
 
+// KV 작업을 위한 헬퍼 함수 (타임아웃과 재시도 포함)
+async function safeKVOperation<T>(operation: () => Promise<T>, fallback: T, operationName: string): Promise<T> {
+  try {
+    console.log(`${operationName}: Starting KV operation...`);
+    
+    // 20초 타임아웃 설정
+    const result = await Promise.race([
+      operation(),
+      new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error('KV operation timeout')), 20000)
+      )
+    ]);
+    
+    console.log(`${operationName}: KV operation successful`);
+    return result;
+  } catch (error) {
+    console.warn(`${operationName}: KV operation failed, using fallback:`, error);
+    return fallback;
+  }
+}
+
 // ========================================================================== //
 // POST /add/name: (name: string) => {}
 export async function addName(name: string) {
-  console.log('AddName function called:', name);
-  
+  console.log('AddName function called (with improved KV):', name);
   checkValidName(name);
   
   // 메모리에 먼저 추가 (항상 성공)
@@ -62,47 +87,49 @@ export async function addName(name: string) {
   setData(data);
   console.log('Name added to memory successfully');
   
-  // KV에 저장 시도 (실패해도 무시)
-  try {
-    await database.hset("data:names", { data: JSON.stringify(data) });
-    console.log('Name saved to KV successfully');
-  } catch (kvError) {
-    console.warn('KV save failed, but memory is updated:', kvError);
-  }
+  // KV에 저장 시도 (개선된 타임아웃과 재시도)
+  await safeKVOperation(
+    () => database.hset("data:names", { data: JSON.stringify(data) }),
+    undefined,
+    'AddName'
+  );
   
   return {};
 }
 
 // GET /view/names: () => { names:  ['Adam', 'Ben', 'Carl'] }
 export async function viewNames() {
-  console.log('ViewNames function called');
+  console.log('ViewNames function called (with improved KV)');
   
-  // 메모리 데이터 먼저 확인
+  // 메모리 데이터 확인
   const memoryData = getData();
   console.log('Current memory data:', memoryData.names);
   
-  // KV에서 데이터 로드 시도
-  try {
-    console.log('Attempting to load from KV...');
-    const kvData = await database.hgetall("data:names");
-    
-    if (kvData && (kvData as any).data) {
+  // KV에서 데이터 로드 시도 (개선된 타임아웃과 재시도)
+  const kvData = await safeKVOperation(
+    () => database.hgetall("data:names"),
+    null,
+    'ViewNames'
+  );
+  
+  if (kvData && (kvData as any).data) {
+    try {
       const parsedData = JSON.parse((kvData as any).data as string);
-      console.log('KV data loaded successfully:', parsedData);
+      console.log('KV data loaded and parsed successfully:', parsedData);
       setData(parsedData);
       return { names: parsedData.names };
-    } else {
-      console.log('No KV data found, using memory data');
+    } catch (parseError) {
+      console.error('Failed to parse KV data, using memory:', parseError);
       return { names: memoryData.names };
     }
-  } catch (error) {
-    console.error('KV error, falling back to memory:', error);
+  } else {
+    console.log('No valid KV data found, using memory data');
     return { names: memoryData.names };
   }
 }
 
 export async function clear() {
-  console.log('Clear function called');
+  console.log('Clear function called (with improved KV)');
   
   // 메모리 먼저 클리어 (항상 성공)
   const data = getData();
@@ -110,13 +137,12 @@ export async function clear() {
   setData(data);
   console.log('Memory cleared successfully');
   
-  // KV도 클리어 시도 (실패해도 무시)
-  try {
-    await database.hset("data:names", { data: JSON.stringify(data) });
-    console.log('KV cleared successfully');
-  } catch (kvError) {
-    console.warn('KV clear failed, but memory is cleared:', kvError);
-  }
+  // KV도 클리어 시도 (개선된 타임아웃과 재시도)
+  await safeKVOperation(
+    () => database.hset("data:names", { data: JSON.stringify(data) }),
+    undefined,
+    'Clear'
+  );
   
   return {};
 }
