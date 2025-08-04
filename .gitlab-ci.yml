@@ -1,0 +1,12 @@
+image: comp1531/automarking:latest
+
+stages:
+  - pipeline
+
+pipeline:
+  stage: pipeline
+  script:
+    - npm install
+    - npm test
+  only:
+    - master
