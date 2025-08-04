@@ -48,22 +48,14 @@ const requestHelper = (method: HttpVerb, path: string, payload: object) => {
 const getData = (): Data => {
   try {
     const res = requestHelper('GET', '/data', {});
-    return res.data || { names: [] };
+    return res.data;
   } catch (e) {
-    return {
-      names: []
-    };
+    return { names: [] };
   }
 };
 
 export const setData = (newData: Data) => {
-  dataStore = newData;
-  try {
-    requestHelper('PUT', '/data', { data: newData });
-  } catch (e) {
-    // If deployed server fails, still keep local data
-    console.log('Failed to sync to deployed database:', e);
-  }
+  requestHelper('PUT', '/data', { data: newData });
 };
 
 const checkValidName = (name: string) => {
