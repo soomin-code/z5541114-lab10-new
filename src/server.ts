@@ -17,6 +17,7 @@ const database = Redis.fromEnv();
 
 const app = express();
 
+// Force rebuild to break Vercel cache - v2
 app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
