@@ -38,6 +38,7 @@
     "middleware-http-errors": "^0.1.2",
     "morgan": "^1.10.0",
     "sync-request": "^6.1.0",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "vercel": "^44.7.0"
   }
 }
