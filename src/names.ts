@@ -5,8 +5,10 @@
  */
 
 import HTTPError from 'http-errors';
+import request, { HttpVerb } from 'sync-request';
+// Ensure that your DEPLOYED_URL has been updated correctly
+import { DEPLOYED_URL } from './submission';
 
-import fs from 'fs';
 export const DATABASE_FILE = 'database.json';
 const MAX_LENGTH = 20;
 const MIN_LENGTH = 1;
@@ -30,14 +32,38 @@ let dataStore: Data = {
  * file of its own such as src/helper.ts, then export and import into other files.
  */
 
-const getData = () => {
-  return dataStore;
+const requestHelper = (method: HttpVerb, path: string, payload: object) => {
+  let json = {};
+  let qs = {};
+  if (['POST', 'DELETE'].includes(method)) {
+    qs = payload;
+  } else {
+    json = payload;
+  }
+
+  const res = request(method, DEPLOYED_URL + path, { qs, json, timeout: 20000 });
+  return JSON.parse(res.body.toString());
+};
+
+const getData = (): Data => {
+  try {
+    const res = requestHelper('GET', '/data', {});
+    return res.data || { names: [] };
+  } catch (e) {
+    return {
+      names: []
+    };
+  }
 };
 
 export const setData = (newData: Data) => {
   dataStore = newData;
-  // Update our persistent data store with any data changes
-  fs.writeFileSync(DATABASE_FILE, JSON.stringify(dataStore));
+  try {
+    requestHelper('PUT', '/data', { data: newData });
+  } catch (e) {
+    // If deployed server fails, still keep local data
+    console.log('Failed to sync to deployed database:', e);
+  }
 };
 
 const checkValidName = (name: string) => {

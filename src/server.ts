@@ -8,6 +8,17 @@ import { echo } from "./echo";
 import errorHandler from "middleware-http-errors";
 import { DATABASE_FILE, setData, addName, viewNames, clear } from "./names";
 import { port, url } from "./config.json";
+import { Redis } from '@upstash/redis';
+
+// Replace this with your KV_REST_API_URL
+const KV_REST_API_URL = "https://adjusted-iguana-8721.upstash.io";
+// Replace this with your KV_REST_API_TOKEN
+const KV_REST_API_TOKEN = "ASIRAAIjcDFkNjkwY2ZkNzkwNTE0NDNkODEyYTNiYzE4ODZkMjYzM3AxMA";
+
+const database = new Redis({
+  url: KV_REST_API_URL,
+  token: KV_REST_API_TOKEN,
+});
 
 const PORT: number = parseInt(process.env.PORT || port);
 const SERVER_URL = `${url}:${PORT}`;
@@ -47,20 +58,23 @@ app.get("/echo/:message", (req: Request, res: Response) => {
   res.json(echo(req.params.message));
 });
 
+// Database routes for Vercel KV
+app.get('/data', async (req: Request, res: Response) => {
+  const data = await database.hgetall("data:names");
+  res.status(200).json(data);
+});
+
+app.put('/data', async (req: Request, res: Response) => {
+  const { data } = req.body;
+  await database.hset("data:names", { data });
+  return res.status(200).json({});
+});
+
 app.use(errorHandler());
 
 const server = app.listen(PORT, () => {
-  // Load existing persistent data before server starts
-  if (fs.existsSync(DATABASE_FILE)) {
-    setData(JSON.parse(String(fs.readFileSync(DATABASE_FILE))));
-  } else {
-    fs.writeFileSync(
-      DATABASE_FILE,
-      JSON.stringify({
-        names: [],
-      })
-    );
-  }
+  // Initialize empty datastore for Vercel deployment
+  setData({ names: [] });
 
   console.log(`Server started at the URL: '${SERVER_URL}'`);
 });
