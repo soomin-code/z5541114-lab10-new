@@ -40,9 +40,17 @@ app.post("/add/name", async (req: Request, res) => {
   try {
     const result = await addName(req.body.name);
     res.json(result);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in /add/name:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    
+    // HTTPError인 경우 원래 상태 코드 사용
+    if (error.status || error.statusCode) {
+      const statusCode = error.status || error.statusCode;
+      res.status(statusCode).json({ error: error.message });
+    } else {
+      // 일반 에러는 500
+      res.status(500).json({ error: 'Internal server error' });
+    }
   }
 });
 
@@ -50,9 +58,17 @@ app.get("/view/names", async (req: Request, res: Response) => {
   try {
     const result = await viewNames();
     res.json(result);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in /view/names:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    
+    // HTTPError인 경우 원래 상태 코드 사용
+    if (error.status || error.statusCode) {
+      const statusCode = error.status || error.statusCode;
+      res.status(statusCode).json({ error: error.message });
+    } else {
+      // 일반 에러는 500
+      res.status(500).json({ error: 'Internal server error' });
+    }
   }
 });
 
@@ -60,9 +76,17 @@ app.delete("/clear", async (req: Request, res: Response) => {
   try {
     const result = await clear();
     res.json(result);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in DELETE /clear:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    
+    // HTTPError인 경우 원래 상태 코드 사용
+    if (error.status || error.statusCode) {
+      const statusCode = error.status || error.statusCode;
+      res.status(statusCode).json({ error: error.message });
+    } else {
+      // 일반 에러는 500
+      res.status(500).json({ error: 'Internal server error' });
+    }
   }
 });
 
@@ -70,9 +94,17 @@ app.post("/clear", async (req: Request, res: Response) => {
   try {
     const result = await clear();
     res.json(result);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in POST /clear:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    
+    // HTTPError인 경우 원래 상태 코드 사용
+    if (error.status || error.statusCode) {
+      const statusCode = error.status || error.statusCode;
+      res.status(statusCode).json({ error: error.message });
+    } else {
+      // 일반 에러는 500
+      res.status(500).json({ error: 'Internal server error' });
+    }
   }
 });
 
