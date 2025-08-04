@@ -10,15 +10,8 @@ import { DATABASE_FILE, setData, addName, viewNames, clear } from "./names";
 import { port, url } from "./config.json";
 import { Redis } from '@upstash/redis';
 
-// Replace this with your KV_REST_API_URL
-const KV_REST_API_URL = "https://adjusted-iguana-8721.upstash.io";
-// Replace this with your KV_REST_API_TOKEN
-const KV_REST_API_TOKEN = "ASIRAAIjcDFkNjkwY2ZkNzkwNTE0NDNkODEyYTNiYzE4ODZkMjYzM3AxMA";
-
-const database = new Redis({
-  url: KV_REST_API_URL,
-  token: KV_REST_API_TOKEN,
-});
+// Use environment variables for KV configuration
+const database = Redis.fromEnv();
 
 const PORT: number = parseInt(process.env.PORT || port);
 const SERVER_URL = `${url}:${PORT}`;
