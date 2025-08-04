@@ -9,8 +9,11 @@ import { addName, viewNames, clear } from "./names";
 import { port, url } from "./config.json";
 import { Redis } from '@upstash/redis';
 
-// Use environment variables for KV configuration
-const database = Redis.fromEnv();
+// Fallback to hardcoded values if environment variables fail
+const database = new Redis({
+  url: "https://adjusted-iguana-8721.upstash.io",
+  token: "ASIRAAIjcDFkNjkwY2ZkNzkwNTE0NDNkODEyYTNiYzE4ODZkMjYzM3AxMA"
+});
 
 const PORT: number = parseInt(process.env.PORT || port);
 const SERVER_URL = `${url}:${PORT}`;
@@ -52,14 +55,24 @@ app.get("/echo/:message", (req: Request, res: Response) => {
 
 // Database routes for Vercel KV
 app.get('/data', async (req: Request, res: Response) => {
-  const data = await database.hgetall("data:names");
-  res.status(200).json(data);
+  try {
+    const data = await database.hgetall("data:names");
+    res.status(200).json(data);
+  } catch (error) {
+    console.error('KV Error:', error);
+    res.status(500).json({ error: 'Database connection failed' });
+  }
 });
 
 app.put('/data', async (req: Request, res: Response) => {
-  const { data } = req.body;
-  await database.hset("data:names", { data });
-  return res.status(200).json({});
+  try {
+    const { data } = req.body;
+    await database.hset("data:names", { data });
+    return res.status(200).json({});
+  } catch (error) {
+    console.error('KV Error:', error);
+    res.status(500).json({ error: 'Database connection failed' });
+  }
 });
 
 app.use(errorHandler());

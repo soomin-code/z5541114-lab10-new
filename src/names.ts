@@ -9,7 +9,6 @@ import request, { HttpVerb } from 'sync-request';
 // Ensure that your DEPLOYED_URL has been updated correctly
 import { DEPLOYED_URL } from './submission';
 
-export const DATABASE_FILE = 'database.json';
 const MAX_LENGTH = 20;
 const MIN_LENGTH = 1;
 
