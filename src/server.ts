@@ -80,6 +80,20 @@ app.get('/test', (req: Request, res: Response) => {
   res.status(200).json({ message: 'Test route works!' });
 });
 
+// KV 연결 테스트용 라우트 추가
+app.get('/test-db', async (req: Request, res: Response) => {
+  try {
+    console.log('Testing KV connection...');
+    await database.set("test", "hello");
+    const result = await database.get("test");
+    console.log('KV test result:', result);
+    res.status(200).json({ status: 'connected', result });
+  } catch (error) {
+    console.log('KV connection error:', error);
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});
+
 // KV Database routes - 메모리와 KV 연동
 app.get('/data', async (req: Request, res: Response) => {
   try {

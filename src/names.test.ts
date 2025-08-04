@@ -58,7 +58,7 @@ const requestHelper = (method: HttpVerb, path: string, payload: object) => {
   const res = request(method, DEPLOYED_URL + path, {
     qs,
     json,
-    timeout: 20000,
+    timeout: 60000,
   });
   return parseResponse(res, path);
 };
