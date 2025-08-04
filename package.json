@@ -6,13 +6,20 @@
   "scripts": {
     "test": "jest",
     "ts-node": "ts-node",
-    "start": "ts-node src/server.ts"
+    "start": "ts-node src/server.ts",
+    "build": "tsc",
+    "dev": "ts-node-dev src/server.ts",
+    "stop": "pkill -f 'ts-node src/server.ts'"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
     "@types/jest": "^29.5.12",
+    "@types/morgan": "^1.9.10",
+    "@types/node": "^24.1.0",
     "@typescript-eslint/eslint-plugin": "^7.7.1",
     "@typescript-eslint/parser": "^7.7.1",
     "eslint": "^8.57.0",
