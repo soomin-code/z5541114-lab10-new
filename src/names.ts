@@ -30,10 +30,10 @@ interface Data {
 const requestHelper = (method: HttpVerb, path: string, payload: object) => {
   let json = {};
   let qs = {};
-  if (['POST', 'DELETE'].includes(method)) {
-    qs = payload;
+  if (['GET', 'DELETE'].includes(method)) {
+    qs = payload;        // GET/DELETE는 query string
   } else {
-    json = payload;
+    json = payload;      // POST/PUT은 JSON body
   }
 
   const res = request(method, DEPLOYED_URL + path, { qs, json, timeout: 20000 });
