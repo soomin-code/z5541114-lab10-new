@@ -7,13 +7,6 @@ import { echo } from "./echo";
 import errorHandler from "middleware-http-errors";
 import { addName, viewNames, clear } from "./names";
 import { port, url } from "./config.json";
-import { Redis } from '@upstash/redis';
-
-// Fallback to hardcoded values if environment variables fail
-const database = new Redis({
-  url: "https://adjusted-iguana-8721.upstash.io",
-  token: "ASIRAAIjcDFkNjkwY2ZkNzkwNTE0NDNkODEyYTNiYzE4ODZkMjYzM3AxMA"
-});
 
 const PORT: number = parseInt(process.env.PORT || port);
 const SERVER_URL = `${url}:${PORT}`;
@@ -53,30 +46,17 @@ app.get("/echo/:message", (req: Request, res: Response) => {
   res.json(echo(req.params.message));
 });
 
-// Database routes for Vercel KV
-app.get('/data', async (req: Request, res: Response) => {
-  try {
-    console.log('Attempting to connect to KV database...');
-    const data = await database.hgetall("data:names");
-    console.log('KV data retrieved:', data);
-    res.status(200).json(data || {});
-  } catch (error) {
-    console.error('KV Error:', error);
-    res.status(200).json({ data: { names: [] } }); // fallback data
-  }
+// Simple /data routes without Redis for testing
+app.get('/data', (req: Request, res: Response) => {
+  console.log('/data GET route accessed');
+  res.status(200).json({ data: { names: [] } });
 });
 
-app.put('/data', async (req: Request, res: Response) => {
-  try {
-    console.log('Attempting to save data to KV...');
-    const { data } = req.body;
-    await database.hset("data:names", { data });
-    console.log('Data saved to KV successfully');
-    return res.status(200).json({});
-  } catch (error) {
-    console.error('KV Save Error:', error);
-    res.status(200).json({}); // Return success even if save fails
-  }
+app.put('/data', (req: Request, res: Response) => {
+  console.log('/data PUT route accessed');
+  const { data } = req.body;
+  console.log('Received data:', data);
+  res.status(200).json({});
 });
 
 app.use(errorHandler());
