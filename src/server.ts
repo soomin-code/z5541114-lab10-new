@@ -46,6 +46,12 @@ app.get("/echo/:message", (req: Request, res: Response) => {
   res.json(echo(req.params.message));
 });
 
+// Test route for debugging
+app.get('/test', (req: Request, res: Response) => {
+  console.log('/test route accessed');
+  res.status(200).json({ message: 'Test route works!' });
+});
+
 // Simple /data routes without Redis for testing
 app.get('/data', (req: Request, res: Response) => {
   console.log('/data GET route accessed');
@@ -57,6 +63,20 @@ app.put('/data', (req: Request, res: Response) => {
   const { data } = req.body;
   console.log('Received data:', data);
   res.status(200).json({});
+});
+
+// Debug: List all registered routes
+app.get('/debug-routes', (req: Request, res: Response) => {
+  const routes: any[] = [];
+  (app as any)._router.stack.forEach((middleware: any) => {
+    if (middleware.route) {
+      routes.push({
+        path: middleware.route.path,
+        methods: Object.keys(middleware.route.methods)
+      });
+    }
+  });
+  res.json({ routes });
 });
 
 app.use(errorHandler());
