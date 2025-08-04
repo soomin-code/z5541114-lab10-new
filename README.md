@@ -464,3 +464,4 @@ Afterwards, assuming you are working on a CSE machine (e.g. via VLAB), we strong
 $ rm -rf node_modules
 ```
 This is because CSE machines only allow each user to have a maximum of 2GB, so you will eventually run out of storage space. It is always possible to `npm install` your packages again!
+# Force deploy latest KV code 2025년 8월  4일 월요일 18시 03분 48초 KST
