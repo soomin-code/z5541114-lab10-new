@@ -8,26 +8,6 @@
   ],
   "routes": [
     {
-      "src": "/data",
-      "dest": "src/server.ts"
-    },
-    {
-      "src": "/echo/(.*)",
-      "dest": "src/server.ts"
-    },
-    {
-      "src": "/add/(.*)",
-      "dest": "src/server.ts"
-    },
-    {
-      "src": "/view/(.*)",
-      "dest": "src/server.ts"
-    },
-    {
-      "src": "/clear",
-      "dest": "src/server.ts"
-    },
-    {
       "src": "/(.*)",
       "dest": "src/server.ts"
     }
