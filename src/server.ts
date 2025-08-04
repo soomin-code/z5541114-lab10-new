@@ -12,8 +12,11 @@ import { port, url } from "./config.json";
 const PORT: number = parseInt(process.env.PORT || port);
 const SERVER_URL = `${url}:${PORT}`;
 
-// KV Database connection using environment variables
-const database = Redis.fromEnv();
+// KV Database connection using explicit configuration (same as names.ts)
+const database = new Redis({
+  url: process.env.KV_REST_API_URL || 'https://adjusted-iguana-8721.upstash.io',
+  token: process.env.KV_REST_API_TOKEN || 'ASIRAAIjcDFkNjkwY2ZkNzkwNTE0NDNkODEyYTNiYzE4ODZkMjYzM3AxMA',
+});
 
 const app = express();
 
