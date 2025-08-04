@@ -95,6 +95,19 @@ app.get('/test-db', async (req: Request, res: Response) => {
   }
 });
 
+// 간단한 KV 테스트 - 더 안전한 버전
+app.get('/test-kv-simple', async (req: Request, res: Response) => {
+  try {
+    console.log('Simple KV test starting...');
+    const testResult = await database.ping();
+    console.log('KV ping result:', testResult);
+    res.status(200).json({ status: 'KV ping successful', result: testResult });
+  } catch (error) {
+    console.log('KV ping failed:', error);
+    res.status(200).json({ status: 'KV ping failed', error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});
+
 // KV Database routes - 메모리와 KV 연동
 app.get('/data', async (req: Request, res: Response) => {
   try {
