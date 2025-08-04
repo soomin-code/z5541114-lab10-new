@@ -31,9 +31,9 @@ const requestHelper = (method: HttpVerb, path: string, payload: object) => {
   let json = {};
   let qs = {};
   if (['GET', 'DELETE'].includes(method)) {
-    qs = payload;        // GET/DELETE는 query string
+    qs = payload;
   } else {
-    json = payload;      // POST/PUT은 JSON body
+    json = payload;
   }
 
   const res = request(method, DEPLOYED_URL + path, { qs, json, timeout: 20000 });
@@ -45,7 +45,9 @@ const getData = (): Data => {
     const res = requestHelper('GET', '/data', {});
     return res.data;
   } catch (e) {
-    return { names: [] };
+    return {
+      names: []
+    };
   }
 };
 
