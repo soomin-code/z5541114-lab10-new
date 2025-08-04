@@ -165,6 +165,58 @@ app.get('/debug-routes', (req: Request, res: Response) => {
   res.json({ routes });
 });
 
+// 환경변수 디버깅용 라우트 (중요 정보는 마스킹)
+app.get('/debug-env', (req: Request, res: Response) => {
+  try {
+    const kvUrl = process.env.KV_REST_API_URL;
+    const kvToken = process.env.KV_REST_API_TOKEN;
+    
+    res.status(200).json({
+      hasKvUrl: !!kvUrl,
+      hasKvToken: !!kvToken,
+      kvUrlPrefix: kvUrl ? kvUrl.substring(0, 20) + '...' : 'NOT_SET',
+      kvTokenPrefix: kvToken ? kvToken.substring(0, 10) + '...' : 'NOT_SET',
+      nodeEnv: process.env.NODE_ENV || 'not_set'
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Debug error' });
+  }
+});
+
+// 매우 간단한 KV ping 테스트
+app.get('/ping-kv', async (req: Request, res: Response) => {
+  try {
+    console.log('=== KV PING TEST START ===');
+    console.log('KV URL:', process.env.KV_REST_API_URL ? 'SET' : 'NOT_SET');
+    console.log('KV TOKEN:', process.env.KV_REST_API_TOKEN ? 'SET' : 'NOT_SET');
+    
+    const startTime = Date.now();
+    const result = await database.ping();
+    const endTime = Date.now();
+    
+    console.log('KV PING SUCCESS:', result, `(${endTime - startTime}ms)`);
+    
+    res.status(200).json({ 
+      success: true, 
+      result, 
+      responseTime: `${endTime - startTime}ms`,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error: any) {
+    console.error('=== KV PING FAILED ===');
+    console.error('Error type:', error.constructor.name);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    
+    res.status(200).json({ 
+      success: false, 
+      error: error.message,
+      errorType: error.constructor.name,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 app.use(errorHandler());
 
 const server = app.listen(PORT, () => {
