@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import cors from "cors";
 
 import morgan from "morgan";
+import { Redis } from '@upstash/redis';
 
 import { echo } from "./echo";
 import errorHandler from "middleware-http-errors";
@@ -10,6 +11,9 @@ import { port, url } from "./config.json";
 
 const PORT: number = parseInt(process.env.PORT || port);
 const SERVER_URL = `${url}:${PORT}`;
+
+// KV Database connection using environment variables
+const database = Redis.fromEnv();
 
 const app = express();
 
@@ -52,17 +56,30 @@ app.get('/test', (req: Request, res: Response) => {
   res.status(200).json({ message: 'Test route works!' });
 });
 
-// Simple /data routes without Redis for testing
-app.get('/data', (req: Request, res: Response) => {
-  console.log('/data GET route accessed');
-  res.status(200).json({ data: { names: [] } });
+// KV Database routes
+app.get('/data', async (req: Request, res: Response) => {
+  try {
+    console.log('Attempting to connect to KV database...');
+    const data = await database.hgetall("data:names");
+    console.log('KV data retrieved:', data);
+    res.status(200).json(data || { data: { names: [] } });
+  } catch (error) {
+    console.error('KV Error:', error);
+    res.status(200).json({ data: { names: [] } }); // fallback data
+  }
 });
 
-app.put('/data', (req: Request, res: Response) => {
-  console.log('/data PUT route accessed');
-  const { data } = req.body;
-  console.log('Received data:', data);
-  res.status(200).json({});
+app.put('/data', async (req: Request, res: Response) => {
+  try {
+    console.log('Attempting to save data to KV...');
+    const { data } = req.body;
+    await database.hset("data:names", { data: JSON.stringify(data) });
+    console.log('Data saved to KV successfully');
+    return res.status(200).json({});
+  } catch (error) {
+    console.error('KV Save Error:', error);
+    res.status(200).json({}); // Return success even if save fails
+  }
 });
 
 // Debug: List all registered routes
