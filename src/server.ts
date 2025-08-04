@@ -1,12 +1,11 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
-import fs from "fs";
 
 import morgan from "morgan";
 
 import { echo } from "./echo";
 import errorHandler from "middleware-http-errors";
-import { DATABASE_FILE, setData, addName, viewNames, clear } from "./names";
+import { addName, viewNames, clear } from "./names";
 import { port, url } from "./config.json";
 import { Redis } from '@upstash/redis';
 
@@ -66,9 +65,6 @@ app.put('/data', async (req: Request, res: Response) => {
 app.use(errorHandler());
 
 const server = app.listen(PORT, () => {
-  // Initialize empty datastore for Vercel deployment
-  setData({ names: [] });
-
   console.log(`Server started at the URL: '${SERVER_URL}'`);
 });
 

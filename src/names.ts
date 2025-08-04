@@ -19,10 +19,6 @@ interface Data {
   names: string[]
 }
 
-let dataStore: Data = {
-  names: []
-};
-
 // ========================================================================== //
 /**
  * HELPER FUNCTIONS
