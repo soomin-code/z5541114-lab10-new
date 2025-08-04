@@ -23,6 +23,7 @@ app.use(morgan("dev"));
 
 app.get("/", (req: Request, res: Response) => {
   console.log("Print to terminal: someone accessed our root url!");
+  // Force redeploy - KV connection fix
   res.json({ message: "Welcome to Lab10 Deploy Server's root URL!" });
 });
 
