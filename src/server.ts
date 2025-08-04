@@ -6,7 +6,7 @@ import { Redis } from '@upstash/redis';
 
 import { echo } from "./echo";
 import errorHandler from "middleware-http-errors";
-import { addName, viewNames, clear } from "./names";
+import { addName, viewNames, clear, setData } from "./names";
 import { port, url } from "./config.json";
 
 const PORT: number = parseInt(process.env.PORT || port);
@@ -56,29 +56,42 @@ app.get('/test', (req: Request, res: Response) => {
   res.status(200).json({ message: 'Test route works!' });
 });
 
-// KV Database routes
+// KV Database routes - 메모리와 KV 연동
 app.get('/data', async (req: Request, res: Response) => {
   try {
-    console.log('Attempting to connect to KV database...');
-    const data = await database.hgetall("data:names");
-    console.log('KV data retrieved:', data);
-    res.status(200).json(data || { data: { names: [] } });
+    console.log('Loading data from KV to memory...');
+    const kvData = await database.hgetall("data:names");
+    if (kvData && kvData.data) {
+      const parsedData = JSON.parse(kvData.data as string);
+      console.log('KV data loaded:', parsedData);
+      // 메모리에 로드
+      setData(parsedData);
+      res.status(200).json({ data: parsedData });
+    } else {
+      console.log('No KV data found, using empty data');
+      res.status(200).json({ data: { names: [] } });
+    }
   } catch (error) {
-    console.error('KV Error:', error);
-    res.status(200).json({ data: { names: [] } }); // fallback data
+    console.error('KV Load Error:', error);
+    res.status(200).json({ data: { names: [] } });
   }
 });
 
 app.put('/data', async (req: Request, res: Response) => {
   try {
-    console.log('Attempting to save data to KV...');
+    console.log('Saving data to both memory and KV...');
     const { data } = req.body;
+    // 메모리에 저장
+    setData(data);
+    // KV에 저장
     await database.hset("data:names", { data: JSON.stringify(data) });
-    console.log('Data saved to KV successfully');
+    console.log('Data saved to both memory and KV successfully');
     return res.status(200).json({});
   } catch (error) {
     console.error('KV Save Error:', error);
-    res.status(200).json({}); // Return success even if save fails
+    // KV 실패해도 메모리는 저장됨
+    setData(req.body.data);
+    res.status(200).json({});
   }
 });
 

@@ -1,7 +1,6 @@
 import request, { HttpVerb, Response } from "sync-request";
 import { DEPLOYED_URL } from "./submission";
 
-test.todo("Remove this line and uncomment the tests below!");
 
 // ========================================================================= //
 
